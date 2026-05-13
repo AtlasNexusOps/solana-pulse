@@ -68,7 +68,7 @@ def compute_scores(assets):
     all_close = []
     for a in assets:
         prices = []
-        ch = a.get("price_change_24h", 0) or 0
+        ch = a.get("price_change_percentage_24h_in_currency", 0) or 0
         price = a.get("price", 1)
         for i in range(20):
             factor = 1 + (ch/100) * (i/20)
@@ -81,7 +81,7 @@ def compute_scores(assets):
     for a in assets:
         cp = a["_close_prices"]
         price = a.get("price", cp[-1] if cp else 1)
-        ch24 = a.get("price_change_24h", 0) or 0
+        ch24 = a.get("price_change_percentage_24h_in_currency", 0) or 0
         ch7d = a.get("price_change_7d", 0) or 0
         mcap = a.get("market_cap", 0) or 0
         vol24 = a.get("total_volume", 0) or 0
@@ -98,7 +98,7 @@ def compute_scores(assets):
         trend = min(25, trend)
         
         # 2. Momentum (25) - percentile-based for fairness
-        all_ch24 = [o.get("price_change_24h", 0) or 0 for o in assets]
+        all_ch24 = [o.get("price_change_percentage_24h_in_currency", 0) or 0 for o in assets]
         all_ch7d = [o.get("price_change_7d", 0) or 0 for o in assets]
         pct24 = sum(1 for x in all_ch24 if ch24 >= x) / max(1, len(all_ch24))
         pct7d = sum(1 for x in all_ch7d if ch7d >= x) / max(1, len(all_ch7d))
@@ -194,22 +194,36 @@ def main():
     for a in all_data:
         a["pulse_class"] = classify(a["pulse_score"], a["pulse_trend"], a["pulse_momentum"], a["pulse_risk"])
     
+    # Filter out data artifacts
+    def is_playable(a):
+        ch = a.get("price_change_percentage_24h_in_currency", 0) or 0
+        if abs(ch) > 50:  # Crypto can have bigger real moves, but >25% is usually artifact
+            return False
+        if abs(ch) < 0.1:
+            return False  # Flat
+        return True
+    
+    assets_clean = [a for a in all_data if is_playable(a)]
+    skipped = len(all_data) - len(assets_clean)
+    if skipped:
+        print(f"  ⚠️ Filtered {skipped} outliers/anomalies")
+    
     # Top 7 Bullish (confirmed uptrend) / Bearish (confirmed downtrend)
     bullish = sorted(
-        [a for a in all_data if (a.get("price_change_24h", 0) or 0) > 0],
+        [a for a in assets_clean if (a.get("price_change_percentage_24h_in_currency", 0) or 0) > 0],
         key=lambda a: a["pulse_score"], reverse=True
     )[:7]
     bearish = sorted(
-        [a for a in all_data if (a.get("price_change_24h", 0) or 0) < 0],
+        [a for a in assets_clean if (a.get("price_change_percentage_24h_in_currency", 0) or 0) < 0],
         key=lambda a: a["pulse_score"]
     )[:7]
     
     # Pad if needed
     if len(bullish) < 7:
-        extras = sorted([a for a in all_data if a not in bullish], key=lambda a: a["pulse_score"], reverse=True)
+        extras = sorted([a for a in assets_clean if a not in bullish], key=lambda a: a["pulse_score"], reverse=True)
         bullish.extend(extras[:7 - len(bullish)])
     if len(bearish) < 7:
-        extras = sorted([a for a in all_data if a not in bullish and a not in bearish], key=lambda a: a["pulse_score"])
+        extras = sorted([a for a in assets_clean if a not in bullish and a not in bearish], key=lambda a: a["pulse_score"])
         bearish.extend(extras[:7 - len(bearish)])
     
     print(f"\n  🚀 Bullish: {len(bullish)}")
@@ -240,7 +254,7 @@ def signal_card(title, emoji, items, score_class):
         name = a.get("name", "?")
         symbol = a.get("symbol", "?")
         score = a.get("pulse_score", 0)
-        ch24 = a.get("price_change_24h", 0) or 0
+        ch24 = a.get("price_change_percentage_24h_in_currency", 0) or 0
         ch_arrow = "▲" if ch24 > 0 else "▼" if ch24 < 0 else "—"
         ch_color = "#22c55e" if ch24 > 0 else "#ef4444" if ch24 < 0 else "#94a3b8"
         mcap = a.get("market_cap", 0) or 0
@@ -289,9 +303,9 @@ def signal_card(title, emoji, items, score_class):
     return f'<div class="signal-card"><h3>{emoji} {title}</h3>{rows}</div>'
 
 def generate_html(all_data, bullish, bearish):
-    up = sum(1 for a in all_data if (a.get("price_change_24h", 0) or 0) > 0)
+    up = sum(1 for a in all_data if (a.get("price_change_percentage_24h_in_currency", 0) or 0) > 0)
     down = len(all_data) - up
-    avg_ch = round(sum(a.get("price_change_24h", 0) or 0 for a in all_data) / max(1, len(all_data)), 1)
+    avg_ch = round(sum(a.get("price_change_percentage_24h_in_currency", 0) or 0 for a in all_data) / max(1, len(all_data)), 1)
     categories = len(set(a.get("_category", "Other") for a in all_data))
     
     bull_card = signal_card("Strong Bullish", "🚀", bullish, "score-hot")
