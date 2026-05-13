@@ -194,28 +194,12 @@ def main():
     for a in all_data:
         a["pulse_class"] = classify(a["pulse_score"], a["pulse_trend"], a["pulse_momentum"], a["pulse_risk"])
     
-    # Top 7 per category with padding
-    hot   = sorted([a for a in all_data if a["pulse_class"] == "hot"],   key=lambda a: a["pulse_score"], reverse=True)[:7]
-    watch = sorted([a for a in all_data if a["pulse_class"] == "watch"], key=lambda a: a["pulse_score"], reverse=True)[:7]
-    risk  = sorted([a for a in all_data if a["pulse_class"] == "risk"],  key=lambda a: a["pulse_score"])[:7]
+    # Top 7 Bullish / Bearish
+    bullish = sorted(all_data, key=lambda a: a["pulse_score"], reverse=True)[:7]
+    bearish = sorted(all_data, key=lambda a: a["pulse_score"])[:7]
     
-    # Pad if needed — fill categories to 7 by pulling from next-best
-    used = set(id(a) for a in hot + watch + risk)
-    if len(hot) < 7:
-        extras = sorted([a for a in all_data if id(a) not in used], key=lambda a: a["pulse_score"], reverse=True)
-        hot.extend(extras[:7 - len(hot)])
-        used.update(id(a) for a in hot)
-    if len(watch) < 7:
-        extras = sorted([a for a in all_data if id(a) not in used], key=lambda a: a["pulse_score"], reverse=True)
-        watch.extend(extras[:7 - len(watch)])
-        used.update(id(a) for a in watch)
-    if len(risk) < 7:
-        extras = sorted([a for a in all_data if id(a) not in used], key=lambda a: a["pulse_score"])
-        risk.extend(extras[:7 - len(risk)])
-    
-    print(f"\n  🔥 Top Momentum: {len(hot)}")
-    print(f"  ⚡ Breakout Watch: {len(watch)}")
-    print(f"  🛡️ Risk Flags: {len(risk)}")
+    print(f"\n  🚀 Bullish: {len(bullish)}")
+    print(f"  🐻 Bearish: {len(bearish)}")
     
     # Export JSON
     path_json = OUTPUT_DIR / f"solana_{NOW}.json"
@@ -230,7 +214,7 @@ def main():
     print(f"✅ CSV: {path_csv}")
     
     # ── Generate Dashboard HTML ──
-    generate_html(all_data, hot, watch, risk)
+    generate_html(all_data, bullish, bearish)
     
     return all_data
 
@@ -265,15 +249,14 @@ def signal_card(title, emoji, items, score_class):
     
     return f'<div class="signal-card"><h3>{emoji} {title}</h3>{rows}</div>'
 
-def generate_html(all_data, hot, watch, risk):
+def generate_html(all_data, bullish, bearish):
     up = sum(1 for a in all_data if (a.get("price_change_24h", 0) or 0) > 0)
     down = len(all_data) - up
     avg_ch = round(sum(a.get("price_change_24h", 0) or 0 for a in all_data) / max(1, len(all_data)), 1)
     categories = len(set(a.get("_category", "Other") for a in all_data))
     
-    hot_card   = signal_card("Top Momentum", "🔥", hot, "score-hot")
-    watch_card = signal_card("Breakout Watch", "⚡", watch, "score-watch")
-    risk_card  = signal_card("Risk Flags", "🛡️", risk, "score-risk")
+    bull_card = signal_card("Strong Bullish", "🚀", bullish, "score-hot")
+    bear_card = signal_card("Strong Bearish", "🐻", bearish, "score-risk")
     
     # Build table rows
     def row_class(val, threshold=0):
@@ -342,7 +325,7 @@ body{{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--b
 .scanner-head p{{color:#8b9bb4;font-size:.88em;line-height:1.4}}
 .formula{{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}}
 .chip{{padding:6px 12px;border:1px solid rgba(226,232,240,.10);background:rgba(7,10,20,.50);border-radius:999px;font-size:.80em;font-weight:700;color:#dbeafe}}
-.scanner-board{{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}}
+.scanner-board{{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}}
 .signal-card{{background:rgba(7,10,20,.58);border:1px solid rgba(226,232,240,.10);border-radius:18px;padding:16px 18px}}
 .signal-card h3{{font-size:.95em;margin-bottom:12px;color:#e0f2fe}}
 .no-signal{{color:var(--muted);font-size:.85em;padding:8px 0}}
@@ -354,7 +337,7 @@ body{{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--b
 .asset-breakdown{{display:block;color:#64748b;font-size:.68em;margin-top:2px;font-family:monospace;letter-spacing:.5px}}
 .score-pill{{font-weight:800;border-radius:999px;padding:4px 9px;font-size:.80em;min-width:46px;text-align:center;display:inline-block}}
 .score-hot{{background:rgba(20,241,149,.14);color:#14F195;border:1px solid rgba(20,241,149,.35)}}
-.score-watch{{background:rgba(245,158,11,.14);color:#fcd34d;border:1px solid rgba(245,158,11,.35)}}
+.
 .score-risk{{background:rgba(239,68,68,.14);color:#fca5a5;border:1px solid rgba(239,68,68,.35)}}
 .leaderboard{{margin:30px 0}}
 .leaderboard h2{{margin-bottom:14px;color:var(--accent)}}
@@ -397,12 +380,12 @@ tr:hover{{background:rgba(153,69,255,.03)}}
 </div>
 </div>
 <div class="scanner-board">
-{hot_card}
-{watch_card}
-{risk_card}
+{bull_card}
+
+{bear_card}
 </div>
 <div class="legend">
-<span>🔥 score ≥ 50</span><span>⚡ score 30–49</span><span>🛡️ score &lt;35</span>
+<span>🔥 score ≥ 50</span><span>🐻 Strong Bearish · lowest scores</span>
 </div>
 </section>
 
