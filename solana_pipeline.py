@@ -194,9 +194,23 @@ def main():
     for a in all_data:
         a["pulse_class"] = classify(a["pulse_score"], a["pulse_trend"], a["pulse_momentum"], a["pulse_risk"])
     
-    # Top 7 Bullish / Bearish
-    bullish = sorted(all_data, key=lambda a: a["pulse_score"], reverse=True)[:7]
-    bearish = sorted(all_data, key=lambda a: a["pulse_score"])[:7]
+    # Top 7 Bullish (confirmed uptrend) / Bearish (confirmed downtrend)
+    bullish = sorted(
+        [a for a in all_data if (a.get("price_change_24h", 0) or 0) > 0],
+        key=lambda a: a["pulse_score"], reverse=True
+    )[:7]
+    bearish = sorted(
+        [a for a in all_data if (a.get("price_change_24h", 0) or 0) < 0],
+        key=lambda a: a["pulse_score"]
+    )[:7]
+    
+    # Pad if needed
+    if len(bullish) < 7:
+        extras = sorted([a for a in all_data if a not in bullish], key=lambda a: a["pulse_score"], reverse=True)
+        bullish.extend(extras[:7 - len(bullish)])
+    if len(bearish) < 7:
+        extras = sorted([a for a in all_data if a not in bullish and a not in bearish], key=lambda a: a["pulse_score"])
+        bearish.extend(extras[:7 - len(bearish)])
     
     print(f"\n  🚀 Bullish: {len(bullish)}")
     print(f"  🐻 Bearish: {len(bearish)}")
@@ -238,21 +252,27 @@ def signal_card(title, emoji, items, score_class):
         if mcap > 1e9: meta_parts.append(f"${mcap/1e9:.1f}B")
         elif mcap > 1e6: meta_parts.append(f"${mcap/1e6:.0f}M")
         
-        # Price, target (ATH) & stop loss (ATL)
+        # Price, target & stop — flipped for bearish
         price = a.get("current_price", 0) or 0
         ath = a.get("ath", 0) or 0
         atl = a.get("atl", 0) or 0
-        if price and ath:
-            pct_to_ath = round((ath - price) / price * 100, 1) if price else 0
-            pct_to_stop = round((price - atl) / price * 100, 1) if price and atl else 0
-            price_line = f"${price:,.4f}"
-            target_line = f"→ ${ath:,.4f}"
-            stop_line = f"🛑 ${atl:,.4f}" if atl else ""
-            if pct_to_ath > 0:
-                target_line += f" <span style=\"color:#22c55e;font-size:.78em\">+{pct_to_ath}%</span>"
-            if pct_to_stop > 0 and atl:
-                stop_line += f" <span style=\"color:#ef4444;font-size:.78em\">−{pct_to_stop}%</span>"
-            pricetag = f'<span class="asset-pricetag">{price_line} <span style="color:var(--muted)">{target_line} | {stop_line}</span></span>'
+        if price:
+            price_fmt = f"${price:,.4f}"
+            pct_up = round((ath - price) / price * 100, 1) if price and ath else 0
+            pct_down = round((price - atl) / price * 100, 1) if price and atl else 0
+            
+            if "Bullish" in title:
+                target_fmt = f"→ ${ath:,.4f}" if ath else ""
+                stop_fmt = f"🛑 ${atl:,.4f}" if atl else ""
+                if pct_up > 0: target_fmt += f" <span style=\"color:#22c55e;font-size:.78em\">+{pct_up}%</span>"
+                if pct_down > 0: stop_fmt += f" <span style=\"color:#ef4444;font-size:.78em\">−{pct_down}%</span>"
+            else:
+                target_fmt = f"→ ${atl:,.4f}" if atl else ""
+                stop_fmt = f"🛑 ${ath:,.4f}" if ath else ""
+                if pct_down > 0: target_fmt += f" <span style=\"color:#ef4444;font-size:.78em\">−{pct_down}%</span>"
+                if pct_up > 0: stop_fmt += f" <span style=\"color:#22c55e;font-size:.78em\">+{pct_up}%</span>"
+            
+            pricetag = f'<span class="asset-pricetag">{price_fmt} <span style="color:var(--muted)">{target_fmt} | {stop_fmt}</span></span>'
         else:
             pricetag = ""
         
