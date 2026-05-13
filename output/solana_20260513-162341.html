@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🪙 Solana Market Pulse — Atlas Nexus</title>
+<style>
+:root{--bg:#080b16;--card:#0f1420;--border:#1a2040;--accent:#9945FF;--accent2:#14F195;--green:#22c55e;--red:#ef4444;--text:#e2e8f0;--muted:#64748b}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;background-image:radial-gradient(ellipse at 30% 0%,rgba(153,69,255,.06) 0%,transparent 50%),radial-gradient(ellipse at 70% 100%,rgba(20,241,149,.04) 0%,transparent 50%)}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+.header{text-align:center;padding:40px 20px 30px;border-bottom:1px solid var(--border)}
+.title-emoji{font-size:2.8em;margin-bottom:0;line-height:1}
+.header h1{font-size:2.4em;font-weight:800;background:linear-gradient(135deg,#9945FF,#14F195,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header p{color:var(--muted);margin-top:8px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(153,69,255,.08);border:1px solid rgba(153,69,255,.2);padding:6px 16px;border-radius:999px;font-size:.85em;color:#d4bfff;margin-bottom:16px}
+.live-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin:24px 0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center}
+.card .value{font-size:1.6em;font-weight:800}
+.card .label{color:var(--muted);margin-top:4px;font-size:.85em}
+.scanner{margin:26px 0 22px;padding:22px 24px;border:1px solid rgba(153,69,255,.28);border-radius:22px;background:linear-gradient(135deg,rgba(153,69,255,.10),rgba(20,241,149,.06) 45%,rgba(56,189,248,.06));box-shadow:0 22px 70px rgba(0,0,0,.25)}
+.scanner-head h2{font-size:1.4em;margin-bottom:8px}
+.scanner-head p{color:#8b9bb4;font-size:.88em;line-height:1.4}
+.formula{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{padding:6px 12px;border:1px solid rgba(226,232,240,.10);background:rgba(7,10,20,.50);border-radius:999px;font-size:.80em;font-weight:700;color:#dbeafe}
+.scanner-board{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.signal-card{background:rgba(7,10,20,.58);border:1px solid rgba(226,232,240,.10);border-radius:18px;padding:16px 18px}
+.signal-card h3{font-size:.95em;margin-bottom:12px;color:#e0f2fe}
+.no-signal{color:var(--muted);font-size:.85em;padding:8px 0}
+.signal-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(226,232,240,.07)}
+.signal-row:last-child{border-bottom:0}
+.asset-name{font-weight:800;font-size:.95em}
+.asset-symbol{color:var(--muted);font-size:.78em;margin-left:4px}
+.asset-meta{display:block;color:#8b9bb4;font-size:.74em;margin-top:2px}
+.asset-breakdown{display:block;color:#64748b;font-size:.68em;margin-top:2px;font-family:monospace;letter-spacing:.5px}
+.score-pill{font-weight:800;border-radius:999px;padding:4px 9px;font-size:.80em;min-width:46px;text-align:center;display:inline-block}
+.score-hot{background:rgba(20,241,149,.14);color:#14F195;border:1px solid rgba(20,241,149,.35)}
+.score-watch{background:rgba(245,158,11,.14);color:#fcd34d;border:1px solid rgba(245,158,11,.35)}
+.score-risk{background:rgba(239,68,68,.14);color:#fca5a5;border:1px solid rgba(239,68,68,.35)}
+.leaderboard{margin:30px 0}
+.leaderboard h2{margin-bottom:14px;color:var(--accent)}
+.table-wrapper{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:.92em}
+th{background:rgba(15,20,40,.6);padding:14px 16px;text-align:left;font-weight:600;color:var(--accent);font-size:.80em;text-transform:uppercase}
+td{padding:12px 16px;border-bottom:1px solid rgba(26,32,64,.5)}
+tr:hover{background:rgba(153,69,255,.03)}
+.price{font-weight:600;font-variant-numeric:tabular-nums}
+.footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid var(--border);margin-top:30px;font-size:.85em}
+.footer a{color:#38bdf8;text-decoration:none}
+.legend{margin-top:14px;color:#8b9bb4;font-size:.72em;display:flex;gap:10px;flex-wrap:wrap}
+.legend span{padding:5px 10px;background:rgba(7,10,20,.38);border:1px solid rgba(226,232,240,.08);border-radius:999px}
+@media(max-width:800px){.scanner-board{grid-template-columns:1fr}}
+@media(max-width:500px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body>
+<div class="container">
+<div class="header">
+<div class="eyebrow"><span class="live-dot"></span> Solana on-chain intelligence — 20260513-162341</div>
+<div class="title-emoji">🪙</div>
+<h1>Solana Market Pulse</h1>
+<p>Live SPL token dashboard · CoinGecko + Jupiter data · Market Pulse scoring v2</p>
+</div>
+
+<div class="stats-grid">
+<div class="card"><div class="value" style="color:var(--accent)">27</div><div class="label">Tokens Tracked</div></div>
+<div class="card"><div class="value" style="color:var(--green)">4</div><div class="label">Up 24h</div></div>
+<div class="card"><div class="value" style="color:var(--red)">23</div><div class="label">Down 24h</div></div>
+<div class="card"><div class="value" style="color:var(--accent2)">-0.1%</div><div class="label">Avg Change</div></div>
+<div class="card"><div class="value" style="color:#38bdf8">12</div><div class="label">Categories</div></div>
+</div>
+
+<section class="scanner">
+<div class="scanner-head">
+<h2>⚡ Market Pulse Scanner — Solana</h2>
+<p>Technical ranking from CoinGecko + Jupiter data.<br>Score = Trend(25) + Momentum(25) + Rel.Strength(20) + Volume(15) + Risk(15)</p>
+<div class="formula">
+<span class="chip">Trend 25%</span><span class="chip">+ Momentum 25%</span><span class="chip">+ Rel.Strength 20%</span><span class="chip">+ Volume 15%</span><span class="chip">+ Risk 15%</span>
+</div>
+</div>
+<div class="scanner-board">
+<div class="signal-card"><h3>🔥 Top Momentum</h3><p class="no-signal">No signals</p></div>
+<div class="signal-card"><h3>⚡ Breakout Watch</h3><div class="signal-row">
+<div><span class="asset-name">Jito</span> <span class="asset-symbol">jto</span>
+<span class="asset-meta">$237M</span>
+<span class="asset-breakdown">T5 M7 RS20 V8 R12</span></div>
+<div style="text-align:right">
+<span style="color:#22c55e;font-size:.85em">▲ 0.0%</span>
+<span class="score-pill score-watch">52</span>
+</div></div><div class="signal-row">
+<div><span class="asset-name">Marinade</span> <span class="asset-symbol">mnde</span>
+<span class="asset-meta">$12M</span>
+<span class="asset-breakdown">T5 M5 RS19 V3 R15</span></div>
+<div style="text-align:right">
+<span style="color:#22c55e;font-size:.85em">▲ 0.0%</span>
+<span class="score-pill score-watch">47</span>
+</div></div><div class="signal-row">
+<div><span class="asset-name">Nosana</span> <span class="asset-symbol">nos</span>
+<span class="asset-meta">$34M</span>
+<span class="asset-breakdown">T5 M6 RS19 V3 R12</span></div>
+<div style="text-align:right">
+<span style="color:#22c55e;font-size:.85em">▲ 0.0%</span>
+<span class="score-pill score-watch">45</span>
+</div></div><div class="signal-row">
+<div><span class="asset-name">Star Atlas</span> <span class="asset-symbol">atlas</span>
+<span class="asset-meta">$5M</span>
+<span class="asset-breakdown">T5 M5 RS18 V3 R13</span></div>
+<div style="text-align:right">
+<span style="color:#22c55e;font-size:.85em">▲ 0.0%</span>
+<span class="score-pill score-watch">44</span>
+</div></div></div>
+<div class="signal-card"><h3>🛡️ Risk Flags</h3><div class="signal-row">
+<div><span class="asset-name">Lifinity</span> <span class="asset-symbol">lfnty</span>
+<span class="asset-meta"></span>
+<span class="asset-breakdown">T0 M6 RS3 V0 R10</span></div>
+<div style="text-align:right">
+<span style="color:#ef4444;font-size:.85em">▼ 0.0%</span>
+<span class="score-pill score-risk">19</span>
+</div></div><div class="signal-row">
+<div><span class="asset-name">Helium</span> <span class="asset-symbol">hnt</span>
+<span class="asset-meta">$165M</span>
+<span class="asset-breakdown">T0 M8 RS4 V0 R12</span></div>
+<div style="text-align:right">
+<span style="color:#ef4444;font-size:.85em">▼ 0.0%</span>
+<span class="score-pill score-risk">24</span>
+</div></div><div class="signal-row">
+<div><span class="asset-name">Orca</span> <span class="asset-symbol">orca</span>
+<span class="asset-meta">$90M</span>
+<span class="asset-breakdown">T0 M7 RS1 V5 R12</span></div>
+<div style="text-align:right">
+<span style="color:#ef4444;font-size:.85em">▼ 0.1%</span>
+<span class="score-pill score-risk">25</span>
+</div></div><div class="signal-row">
+<div><span class="asset-name">Raydium</span> <span class="asset-symbol">ray</span>
+<span class="asset-meta">$211M</span>
+<span class="asset-breakdown">T0 M8 RS2 V5 R12</span></div>
+<div style="text-align:right">
+<span style="color:#ef4444;font-size:.85em">▼ 0.0%</span>
+<span class="score-pill score-risk">27</span>
+</div></div><div class="signal-row">
+<div><span class="asset-name">Grass</span> <span class="asset-symbol">grass</span>
+<span class="asset-meta">$197M</span>
+<span class="asset-breakdown">T0 M8 RS4 V5 R12</span></div>
+<div style="text-align:right">
+<span style="color:#ef4444;font-size:.85em">▼ 0.0%</span>
+<span class="score-pill score-risk">29</span>
+</div></div><div class="signal-row">
+<div><span class="asset-name">Pyth Network</span> <span class="asset-symbol">pyth</span>
+<span class="asset-meta">$301M</span>
+<span class="asset-breakdown">T0 M8 RS7 V0 R15</span></div>
+<div style="text-align:right">
+<span style="color:#ef4444;font-size:.85em">▼ 0.0%</span>
+<span class="score-pill score-risk">30</span>
+</div></div><div class="signal-row">
+<div><span class="asset-name">Render</span> <span class="asset-symbol">render</span>
+<span class="asset-meta">$982M</span>
+<span class="asset-breakdown">T0 M8 RS6 V5 R12</span></div>
+<div style="text-align:right">
+<span style="color:#ef4444;font-size:.85em">▼ 0.0%</span>
+<span class="score-pill score-risk">31</span>
+</div></div></div>
+</div>
+<div class="legend">
+<span>🔥 score ≥ 60</span><span>⚡ score 40–59</span><span>🛡️ score &lt;35</span>
+</div>
+</section>
+
+<div class="leaderboard">
+<h2>📊 Token Leaderboard</h2>
+<div class="table-wrapper"><div style="overflow-x:auto">
+<table><thead><tr>
+<th>Token</th><th>Price</th><th>24h</th><th>7d</th><th>Market Cap</th><th>Volume 24h</th><th>Score</th><th>Class</th>
+</tr></thead><tbody>
+<tr><td><strong>Jito</strong> <small style="color:var(--muted)">jto</small></td><td class="price">$0.5058</td><td style="color:#22c55e">▲ 3.2%</td><td style="color:#22c55e">14.2%</td><td>$237M</td><td>$42.6M</td><td><span class="score-pill score-watch">52</span></td><td style="color:#fcd34d">⚡</td></tr>
+<tr><td><strong>Marinade</strong> <small style="color:var(--muted)">mnde</small></td><td class="price">$0.0211</td><td style="color:#22c55e">▲ 1.1%</td><td style="color:#22c55e">7.5%</td><td>$12M</td><td>$0.0M</td><td><span class="score-pill score-watch">47</span></td><td style="color:#fcd34d">⚡</td></tr>
+<tr><td><strong>Nosana</strong> <small style="color:var(--muted)">nos</small></td><td class="price">$0.3415</td><td style="color:#22c55e">▲ 3.0%</td><td style="color:#22c55e">31.9%</td><td>$34M</td><td>$0.9M</td><td><span class="score-pill score-watch">45</span></td><td style="color:#fcd34d">⚡</td></tr>
+<tr><td><strong>Bonk</strong> <small style="color:var(--muted)">bonk</small></td><td class="price">$0.0000</td><td style="color:#ef4444">▼ 3.3%</td><td style="color:#22c55e">0.0%</td><td>$606M</td><td>$53.0M</td><td><span class="score-pill score-watch">44</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Star Atlas</strong> <small style="color:var(--muted)">atlas</small></td><td class="price">$0.0002</td><td style="color:#22c55e">▲ 0.4%</td><td style="color:#ef4444">1.1%</td><td>$5M</td><td>$0.1M</td><td><span class="score-pill score-watch">44</span></td><td style="color:#fcd34d">⚡</td></tr>
+<tr><td><strong>deBridge</strong> <small style="color:var(--muted)">dbr</small></td><td class="price">$0.0143</td><td style="color:#ef4444">▼ 0.3%</td><td style="color:#22c55e">4.7%</td><td>$76M</td><td>$5.6M</td><td><span class="score-pill score-watch">43</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Wormhole</strong> <small style="color:var(--muted)">w</small></td><td class="price">$0.0149</td><td style="color:#ef4444">▼ 2.5%</td><td style="color:#22c55e">5.5%</td><td>$87M</td><td>$26.0M</td><td><span class="score-pill score-watch">42</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>GMT</strong> <small style="color:var(--muted)">gmt</small></td><td class="price">$0.0124</td><td style="color:#ef4444">▼ 3.7%</td><td style="color:#22c55e">10.1%</td><td>$39M</td><td>$10.5M</td><td><span class="score-pill score-risk">38</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>The Graph</strong> <small style="color:var(--muted)">grt</small></td><td class="price">$0.0279</td><td style="color:#ef4444">▼ 4.5%</td><td style="color:#22c55e">5.4%</td><td>$302M</td><td>$30.1M</td><td><span class="score-pill score-risk">37</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Kamino</strong> <small style="color:var(--muted)">kmno</small></td><td class="price">$0.0234</td><td style="color:#ef4444">▼ 6.8%</td><td style="color:#22c55e">12.9%</td><td>$108M</td><td>$8.3M</td><td><span class="score-pill score-risk">37</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Mango</strong> <small style="color:var(--muted)">mngo</small></td><td class="price">$0.0312</td><td style="color:#ef4444">▼ 1.9%</td><td style="color:#ef4444">3.0%</td><td>$35M</td><td>$0.0M</td><td><span class="score-pill score-risk">35</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Parcl</strong> <small style="color:var(--muted)">prcl</small></td><td class="price">$0.0141</td><td style="color:#ef4444">▼ 9.1%</td><td style="color:#22c55e">4.3%</td><td>$6M</td><td>$3.2M</td><td><span class="score-pill score-risk">35</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Solana</strong> <small style="color:var(--muted)">sol</small></td><td class="price">$92.0000</td><td style="color:#ef4444">▼ 3.3%</td><td style="color:#22c55e">2.5%</td><td>$53,156M</td><td>$3,356.9M</td><td><span class="score-pill score-risk">34</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Drift Protocol</strong> <small style="color:var(--muted)">drift</small></td><td class="price">$0.0339</td><td style="color:#ef4444">▼ 4.3%</td><td style="color:#ef4444">11.3%</td><td>$21M</td><td>$3.1M</td><td><span class="score-pill score-risk">34</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Metaplex</strong> <small style="color:var(--muted)">mplx</small></td><td class="price">$0.0256</td><td style="color:#ef4444">▼ 2.8%</td><td style="color:#ef4444">0.7%</td><td>$13M</td><td>$0.5M</td><td><span class="score-pill score-risk">34</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Jupiter</strong> <small style="color:var(--muted)">jup</small></td><td class="price">$0.2246</td><td style="color:#ef4444">▼ 2.7%</td><td style="color:#22c55e">12.3%</td><td>$745M</td><td>$47.9M</td><td><span class="score-pill score-risk">33</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>dogwifhat</strong> <small style="color:var(--muted)">wif</small></td><td class="price">$0.2188</td><td style="color:#ef4444">▼ 1.1%</td><td style="color:#ef4444">1.7%</td><td>$218M</td><td>$64.3M</td><td><span class="score-pill score-risk">33</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Tensor</strong> <small style="color:var(--muted)">tnsr</small></td><td class="price">$0.0426</td><td style="color:#ef4444">▼ 4.5%</td><td style="color:#22c55e">4.1%</td><td>$14M</td><td>$30.9M</td><td><span class="score-pill score-risk">33</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Sanctum</strong> <small style="color:var(--muted)">sanctum</small></td><td class="price">$0.0000</td><td style="color:#94a3b8">— 0.0%</td><td style="color:#94a3b8">0.0%</td><td>$0M</td><td>$0.0M</td><td><span class="score-pill score-risk">32</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Render</strong> <small style="color:var(--muted)">render</small></td><td class="price">$1.8900</td><td style="color:#ef4444">▼ 0.2%</td><td style="color:#ef4444">1.7%</td><td>$982M</td><td>$81.8M</td><td><span class="score-pill score-risk">31</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Popcat</strong> <small style="color:var(--muted)">popcat</small></td><td class="price">$0.0644</td><td style="color:#ef4444">▼ 4.6%</td><td style="color:#ef4444">6.0%</td><td>$63M</td><td>$13.7M</td><td><span class="score-pill score-risk">31</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Pyth Network</strong> <small style="color:var(--muted)">pyth</small></td><td class="price">$0.0524</td><td style="color:#ef4444">▼ 5.4%</td><td style="color:#ef4444">1.6%</td><td>$301M</td><td>$13.8M</td><td><span class="score-pill score-risk">30</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Grass</strong> <small style="color:var(--muted)">grass</small></td><td class="price">$0.3355</td><td style="color:#ef4444">▼ 1.9%</td><td style="color:#ef4444">9.5%</td><td>$197M</td><td>$12.1M</td><td><span class="score-pill score-risk">29</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Raydium</strong> <small style="color:var(--muted)">ray</small></td><td class="price">$0.7857</td><td style="color:#ef4444">▼ 4.0%</td><td style="color:#ef4444">5.8%</td><td>$211M</td><td>$20.1M</td><td><span class="score-pill score-risk">27</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Orca</strong> <small style="color:var(--muted)">orca</small></td><td class="price">$1.4900</td><td style="color:#ef4444">▼ 6.5%</td><td style="color:#ef4444">2.2%</td><td>$90M</td><td>$19.4M</td><td><span class="score-pill score-risk">25</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Helium</strong> <small style="color:var(--muted)">hnt</small></td><td class="price">$0.9008</td><td style="color:#ef4444">▼ 1.0%</td><td style="color:#ef4444">6.3%</td><td>$165M</td><td>$2.7M</td><td><span class="score-pill score-risk">24</span></td><td style="color:#fca5a5">🛡️</td></tr>
+<tr><td><strong>Lifinity</strong> <small style="color:var(--muted)">lfnty</small></td><td class="price">$1.1400</td><td style="color:#ef4444">▼ 0.9%</td><td style="color:#ef4444">1.2%</td><td>$0M</td><td>$0.0M</td><td><span class="score-pill score-risk">19</span></td><td style="color:#fca5a5">🛡️</td></tr>
+</tbody></table></div></div>
+</div>
+
+<div class="footer">
+<p>🪙 Built by <strong>Atlas Nexus</strong> · Data: CoinGecko + Jupiter · 20260513-162341</p>
+<p style="margin-top:4px"><a href="https://github.com/AtlasNexusOps/solana-pulse">github.com/AtlasNexusOps/solana-pulse</a> · <a href="https://atlasnexusops.github.io/markets-dashboard/">Markets Dashboard →</a></p>
+</div>
+</div></body></html>
