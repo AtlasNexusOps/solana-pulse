@@ -238,16 +238,21 @@ def signal_card(title, emoji, items, score_class):
         if mcap > 1e9: meta_parts.append(f"${mcap/1e9:.1f}B")
         elif mcap > 1e6: meta_parts.append(f"${mcap/1e6:.0f}M")
         
-        # Price & target (ATH)
+        # Price, target (ATH) & stop loss (ATL)
         price = a.get("current_price", 0) or 0
         ath = a.get("ath", 0) or 0
+        atl = a.get("atl", 0) or 0
         if price and ath:
             pct_to_ath = round((ath - price) / price * 100, 1) if price else 0
+            pct_to_stop = round((price - atl) / price * 100, 1) if price and atl else 0
             price_line = f"${price:,.4f}"
-            ath_line = f"→ ${ath:,.4f}"
+            target_line = f"→ ${ath:,.4f}"
+            stop_line = f"🛑 ${atl:,.4f}" if atl else ""
             if pct_to_ath > 0:
-                ath_line += f" <span style=\"color:#22c55e;font-size:.78em\">+{pct_to_ath}%</span>"
-            pricetag = f'<span class="asset-pricetag">{price_line} <span style="color:var(--muted)">{ath_line}</span></span>'
+                target_line += f" <span style=\"color:#22c55e;font-size:.78em\">+{pct_to_ath}%</span>"
+            if pct_to_stop > 0 and atl:
+                stop_line += f" <span style=\"color:#ef4444;font-size:.78em\">−{pct_to_stop}%</span>"
+            pricetag = f'<span class="asset-pricetag">{price_line} <span style="color:var(--muted)">{target_line} | {stop_line}</span></span>'
         else:
             pricetag = ""
         
