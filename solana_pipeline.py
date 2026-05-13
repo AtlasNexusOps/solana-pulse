@@ -238,10 +238,24 @@ def signal_card(title, emoji, items, score_class):
         if mcap > 1e9: meta_parts.append(f"${mcap/1e9:.1f}B")
         elif mcap > 1e6: meta_parts.append(f"${mcap/1e6:.0f}M")
         
+        # Price & target (ATH)
+        price = a.get("current_price", 0) or 0
+        ath = a.get("ath", 0) or 0
+        if price and ath:
+            pct_to_ath = round((ath - price) / price * 100, 1) if price else 0
+            price_line = f"${price:,.4f}"
+            ath_line = f"→ ${ath:,.4f}"
+            if pct_to_ath > 0:
+                ath_line += f" <span style=\"color:#22c55e;font-size:.78em\">+{pct_to_ath}%</span>"
+            pricetag = f'<span class="asset-pricetag">{price_line} <span style="color:var(--muted)">{ath_line}</span></span>'
+        else:
+            pricetag = ""
+        
         rows += f"""<div class="signal-row">
 <div><span class="asset-name">{name}</span> <span class="asset-symbol">{symbol}</span>
 <span class="asset-meta">{' · '.join(meta_parts)}</span>
-<span class="asset-breakdown">T{t} M{m} RS{rs} V{v} R{r}</span></div>
+<span class="asset-breakdown">T{t} M{m} RS{rs} V{v} R{r}</span>
+{pricetag}</div>
 <div style="text-align:right">
 <span style="color:{ch_color};font-size:.85em">{ch_arrow} {abs(ch24):.1f}%</span>
 <span class="score-pill {score_class}">{score}</span>
@@ -335,6 +349,7 @@ body{{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--b
 .asset-symbol{{color:var(--muted);font-size:.78em;margin-left:4px}}
 .asset-meta{{display:block;color:#8b9bb4;font-size:.74em;margin-top:2px}}
 .asset-breakdown{{display:block;color:#64748b;font-size:.68em;margin-top:2px;font-family:monospace;letter-spacing:.5px}}
+.asset-pricetag{{display:block;color:#bae6fd;font-size:.74em;margin-top:3px}}
 .score-pill{{font-weight:800;border-radius:999px;padding:4px 9px;font-size:.80em;min-width:46px;text-align:center;display:inline-block}}
 .score-hot{{background:rgba(20,241,149,.14);color:#14F195;border:1px solid rgba(20,241,149,.35)}}
 .
