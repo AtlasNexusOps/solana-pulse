@@ -1,5 +1,8 @@
 # Solana Market Pulse
 
+[![CI](https://github.com/AtlasNexusOps/solana-pulse/actions/workflows/ci.yml/badge.svg)](https://github.com/AtlasNexusOps/solana-pulse/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
+
+
 Live SPL token intelligence dashboard for the Solana ecosystem.
 
 **Live demo:** https://atlasnexusops.github.io/solana-pulse/
